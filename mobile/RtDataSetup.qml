@@ -491,14 +491,14 @@ Item {
                         anchors.centerIn: parent
                         anchors.horizontalCenterOffset: -0.675*gaugeSize2
                         anchors.verticalCenterOffset: 0.1*gaugeSize2
-                        minimumValue: -50
-                        maximumValue:  50
+                        minimumValue: 0
+                        maximumValue:  10
                         minAngle: -127
                         maxAngle: 127
-                        labelStep: maximumValue > 60 ? 20 : 10
+                        labelStep: 1
                         value: 0
-                        unitText: VescIf.useImperialUnits() ? "Wh/mi" : "Wh/km"
-                        typeText: "Consump."
+                        unitText: "W/RPM"
+                        typeText: "Efficiency"
                         property color blueColor: {blueColor = Utility.getAppHexColor("tertiary2")}
                         property color orangeColor: {orangeColor = Utility.getAppHexColor("orange")}
                         property color redColor: {redColor = "red"}
@@ -706,8 +706,9 @@ Item {
                 speedGauge.minimumValue = useNegativeSpeedValues ? -speedMaxRound : 0
             }
 
-            speedGauge.value = values.rpm / halfMotorPoles;
-            speedGauge.unitText = "RPM";
+            var rpm = values.rpm / halfMotorPoles
+            speedGauge.value = rpm
+            speedGauge.unitText = "RPM"
 
             var powerMax = Math.min(values.v_in * Math.min(mMcConf.getParamDouble("l_in_current_max"),
                                                            mMcConf.getParamDouble("l_current_max")),
@@ -723,13 +724,14 @@ Item {
                 powerGauge.minimumValue = powerMinRound
             }
 
-            powerGauge.value = (values.current_in * values.v_in)
+            var power = values.current_in * values.v_in
+            powerGauge.value = power
             powerGauge.labelStep = Math.ceil((powerMaxRound - powerMinRound)/5000.0) * 1000.0
             var alpha = 0.05
-            var efficiencyNow = Math.max( Math.min(values.current_in * values.v_in/Math.max(Math.abs(values.speed * 3.6 * impFact), 1e-6) , 60) , -60)
-            efficiency_lpf = (1.0 - alpha) * efficiency_lpf + alpha *  efficiencyNow
-            efficiencyGauge.value = efficiency_lpf
-            efficiencyGauge.unitText = useImperial ? "WH/MI" : "WH/KM"
+
+            var efficiency = rpm === 0 ? 0 : power / rpm
+            efficiencyGauge.value = efficiency
+            efficiencyGauge.unitText = "W/RPM"
             if( (wh_km_total / impFact) < 999.0) {
                 consumValLabel.text = parseFloat(wh_km_total / impFact).toFixed(1)
             } else {
