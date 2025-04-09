@@ -133,12 +133,12 @@ Item {
                 anchors.centerIn: parent
                 anchors.horizontalCenterOffset: (width/4 - gaugeSize2)/2
                 minimumValue: 0
-                maximumValue: 60
+                maximumValue: 2000
                 minAngle: -225
                 maxAngle: 45
-                labelStep: maximumValue > 60 ? 20 : 10
+                labelStep: maximumValue > 1000 ? 500 : 100
                 value: 0
-                unitText: VescIf.useImperialUnits() ? "mph" : "km/h"
+                unitText: "RPM"
                 typeText: "Speed"
 
                 Image {
@@ -690,7 +690,8 @@ Item {
 
             var speedMax = 3.6 * rpmMax / speedFact
             var impFact = useImperial ? 0.621371192 : 1.0
-            var speedMaxRound = Math.ceil((speedMax * impFact) / 10.0) * 10.0
+            var halfMotorPoles = mMcConf.getParamInt("si_motor_poles") / 2;
+            var speedMaxRound = rpmMax / halfMotorPoles;
 
             var dist = values.tachometer_abs / 1000.0
             var wh_consume = values.watt_hours - values.watt_hours_charged
@@ -698,21 +699,15 @@ Item {
 
             if (speedMaxRound > speedGauge.maximumValue || speedMaxRound < (speedGauge.maximumValue * 0.6) ||
                     useNegativeSpeedValues !== speedGauge.minimumValue < 0) {
-                var labelStep = Math.ceil(speedMaxRound / 100) * 10
-
-                if ((speedMaxRound / labelStep) > 30) {
-                    labelStep = speedMaxRound / 30
-                }
+                var labelStep = speedMaxRound > 1000 ? 500 : 100;
 
                 speedGauge.labelStep = labelStep
                 speedGauge.maximumValue = speedMaxRound
                 speedGauge.minimumValue = useNegativeSpeedValues ? -speedMaxRound : 0
             }
 
-            var speedNow = values.speed * 3.6 * impFact
-            speedGauge.value = useNegativeSpeedValues ? speedNow : Math.abs(speedNow)
-
-            speedGauge.unitText = useImperial ? "mph" : "km/h"
+            speedGauge.value = values.rpm / halfMotorPoles;
+            speedGauge.unitText = "RPM";
 
             var powerMax = Math.min(values.v_in * Math.min(mMcConf.getParamDouble("l_in_current_max"),
                                                            mMcConf.getParamDouble("l_current_max")),
