@@ -136,7 +136,7 @@ Item {
                 maximumValue: 2000
                 minAngle: -225
                 maxAngle: 45
-                labelStep: maximumValue > 1000 ? 500 : 100
+                labelStep: maximumValue > 4000 ? 1000 : 500
                 value: 0
                 unitText: "RPM"
                 typeText: "Speed"
@@ -691,7 +691,7 @@ Item {
             var speedMax = 3.6 * rpmMax / speedFact
             var impFact = useImperial ? 0.621371192 : 1.0
             var halfMotorPoles = mMcConf.getParamInt("si_motor_poles") / 2;
-            var speedMaxRound = rpmMax / halfMotorPoles;
+            var speedMaxRound = mMcConf.getParamInt("l_max_erpm") / halfMotorPoles
 
             var dist = values.tachometer_abs / 1000.0
             var wh_consume = values.watt_hours - values.watt_hours_charged
@@ -699,7 +699,7 @@ Item {
 
             if (speedMaxRound > speedGauge.maximumValue || speedMaxRound < (speedGauge.maximumValue * 0.6) ||
                     useNegativeSpeedValues !== speedGauge.minimumValue < 0) {
-                var labelStep = speedMaxRound > 1000 ? 500 : 100;
+                var labelStep = speedMaxRound > 4000 ? 1000 : 500;
 
                 speedGauge.labelStep = labelStep
                 speedGauge.maximumValue = speedMaxRound
